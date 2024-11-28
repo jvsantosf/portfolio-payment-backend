@@ -31,10 +31,6 @@ public class PaymentService {
     private String ACCESS_TOKEN;
 
     public PaymentCreateResponse create(Payer payment) throws PaymentAlreadyCreatedException {
-        if (repository.existsById(payment.getId())) {
-            throw new PaymentAlreadyCreatedException(payment.getId());
-        }
-
         MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
         PaymentClient client = new PaymentClient();
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
