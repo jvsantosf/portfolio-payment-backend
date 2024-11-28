@@ -20,9 +20,9 @@ public class MpPaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> notification(@RequestBody String response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) {
+    public void notification(@RequestBody String response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) {
         System.out.println(response);
-        return ResponseEntity.ok(service.isSecure(headers, queryParams));
+        System.out.println(service.isSecure(headers, queryParams));
     }
 
 }
