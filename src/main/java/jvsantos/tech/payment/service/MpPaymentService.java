@@ -60,7 +60,7 @@ public class MpPaymentService {
         MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
         PaymentClient client = new PaymentClient();
 
-        log.debug("Objeto enviado: {}", request);
+        log.info("Objeto enviado: {}", request);
 
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
                 .transactionAmount(request.amount())
