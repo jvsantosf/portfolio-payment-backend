@@ -2,6 +2,7 @@ package jvsantos.tech.payment.controller;
 
 
 import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
+import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.service.MpPaymentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class MpPaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> notification(@RequestBody String response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) {
+    public ResponseEntity<Object> notification(@RequestBody String response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) throws MpPaymentInvalidException {
         if (!service.isSecure(headers, queryParams)) {
             log.info("O POST enviado para o webhook é desconhecido.");
             return ResponseEntity.badRequest().build();
