@@ -1,66 +1,62 @@
 package jvsantos.tech.payment.service;
 
-import com.mercadopago.MercadoPagoConfig;
-import com.mercadopago.client.MercadoPagoClient;
-import com.mercadopago.client.common.IdentificationRequest;
-import com.mercadopago.client.payment.PaymentClient;
-import com.mercadopago.client.payment.PaymentCreateRequest;
-import com.mercadopago.client.payment.PaymentMethodRequest;
-import com.mercadopago.client.payment.PaymentPayerRequest;
-import com.mercadopago.exceptions.MPApiException;
-import com.mercadopago.exceptions.MPException;
-import com.mercadopago.resources.payment.Payment;
 import jvsantos.tech.payment.dto.PaymentCreateResponse;
-import jvsantos.tech.payment.entity.Payer;
-import jvsantos.tech.payment.exception.PaymentAlreadyCreatedException;
+import jvsantos.tech.payment.entity.Payment;
+import jvsantos.tech.payment.enums.PaymentStatus;
+import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.logging.Logger;
+import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class PaymentService {
 
     private final PaymentRepository repository;
+    private final MpPaymentService mpPaymentService;
 
-    @Value("${mercado.pago.access.token}")
-    private String ACCESS_TOKEN;
+    public PaymentCreateResponse create(Payment payment) throws MpPaymentInvalidException {
+        final var mpPayment = mpPaymentService.create(payment);
 
-    public PaymentCreateResponse create(Payer payment) throws PaymentAlreadyCreatedException {
-        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
-        PaymentClient client = new PaymentClient();
-        PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
-                .transactionAmount(payment.getValue())
-                .paymentMethodId("pix")
-                .payer(
-                        PaymentPayerRequest.builder()
-                                .email(payment.getEmail())
-                                .build()
-                )
-                .build();
-
-        try {
-            Payment createdPayment = client.create(paymentCreateRequest);
-
-            repository.save(payment);
-
-            return PaymentCreateResponse.builder()
-                    .id(createdPayment.getId())
-                    .amount(createdPayment.getTransactionDetails().getTotalPaidAmount())
-                    .status(createdPayment.getPointOfInteraction().getTransactionData().getQrCodeBase64())
-                    .firstName(payment.getFirstName())
-                    .message(payment.getMessage())
-                    .build();
-
-        } catch (MPException | MPApiException e) {
-            LoggerFactory.getLogger(PaymentService.class).error(e.getMessage());
+        if (mpPayment == null) {
+            throw new MpPaymentInvalidException(payment.getId());
         }
 
-        return null;
+        payment.setId(mpPayment.getId());
+        payment.setStatus(PaymentStatus.CREATED);
+
+        repository.save(payment);
+
+        return PaymentCreateResponse.builder()
+                .id(mpPayment.getId())
+                .status(PaymentStatus.fromStatus(mpPayment.getStatus()))
+                .firstName(payment.getFirstName())
+                .qrCodeBase64(mpPayment.getPointOfInteraction().getTransactionData().getQrCodeBase64())
+                .build();
     }
 
+    public void updatePaymentStatus(long id, PaymentStatus status) throws MpPaymentInvalidException {
+        Optional<Payment> optPayment = repository.findById(id);
+
+        if (optPayment.isEmpty()) {
+            throw new MpPaymentInvalidException(id);
+        }
+
+        final var payment = optPayment.get();
+        payment.setStatus(status);
+
+        repository.save(payment);
+
+        log.info("Atualizando status pagamento de ID {} para {}", id, status);
+    }
+
+    public PaymentCreateResponse findPaymentById(long id) throws MpPaymentInvalidException {
+        return repository.findById(id)
+                .map(PaymentCreateResponse::new)
+                .orElseThrow(() -> new MpPaymentInvalidException(id));
+    }
 }

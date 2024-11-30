@@ -1,7 +1,8 @@
 package jvsantos.tech.payment.controller;
 
 import jvsantos.tech.payment.dto.PaymentCreateResponse;
-import jvsantos.tech.payment.entity.Payer;
+import jvsantos.tech.payment.entity.Payment;
+import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.exception.PaymentAlreadyCreatedException;
 import jvsantos.tech.payment.service.PaymentService;
 import lombok.AllArgsConstructor;
@@ -19,8 +20,14 @@ public class PaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public PaymentCreateResponse create(@RequestBody Payer request) throws PaymentAlreadyCreatedException {
+    public PaymentCreateResponse create(@RequestBody Payment request) throws MpPaymentInvalidException {
         return service.create(request);
+    }
+
+    @GetMapping("/status/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public PaymentCreateResponse findById(@PathVariable("id") long id) throws MpPaymentInvalidException {
+        return service.findPaymentById(id);
     }
 
 }

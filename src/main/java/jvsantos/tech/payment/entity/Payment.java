@@ -1,9 +1,7 @@
 package jvsantos.tech.payment.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jvsantos.tech.payment.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +15,14 @@ import java.math.BigDecimal;
 @Data
 @Entity
 @Table
-public class Payer {
+public class Payment {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+
+    @Column
+    private PaymentStatus status;
 
     @Column
     private String firstName;

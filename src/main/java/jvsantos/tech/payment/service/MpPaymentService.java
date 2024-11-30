@@ -1,6 +1,19 @@
 package jvsantos.tech.payment.service;
 
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import com.mercadopago.MercadoPagoConfig;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
+import com.mercadopago.exceptions.MPApiException;
+import com.mercadopago.exceptions.MPException;
+import com.mercadopago.resources.payment.Payment;
+import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
 import jvsantos.tech.payment.utils.Utils;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -10,24 +23,59 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Map;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class MpPaymentService {
 
+    private final ParameterNamesModule parameterNamesModule;
     @Value("${mercado.pago.webhook.secret}")
     private String SECRET_KEY;
 
-    public String isSecure(@RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) {
+    @Value("${mercado.pago.access.token}")
+    private String ACCESS_TOKEN;
+
+    @NonNull
+    private PaymentService paymentService;
+
+    public void updatePaymentStatus(MpPaymentUpdateResponse response) {
+        paymentService.updatePaymentStatus(response.id(), response.action());
+    }
+
+    public Payment create(jvsantos.tech.payment.entity.Payment payment) {
+        MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
+        PaymentClient client = new PaymentClient();
+        PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
+                .transactionAmount(payment.getValue())
+                .paymentMethodId("pix")
+                .payer(
+                        PaymentPayerRequest.builder()
+                                .email(payment.getEmail())
+                                .build()
+                )
+                .build();
+
+        try {
+            return client.create(paymentCreateRequest);
+        } catch (MPException | MPApiException e) {
+            log.error("Não foi possível criar o pagamento");
+        }
+
+        return null;
+    }
+
+    public boolean isSecure(@RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) {
         String xSignature = headers.get("x-signature");
         String xRequestId = headers.get("x-request-id");
 
         if (xSignature == null || xRequestId == null) {
-            return "Headers obrigatórios não encontrados";
+            return false;
         }
 
         String dataID = queryParams.get("data.id");
 
         if (dataID == null) {
-            return "Parametro 'data.id' não encontrado";
+            return false;
         }
 
         String[] parts = xSignature.split(",");
@@ -48,7 +96,7 @@ public class MpPaymentService {
         }
 
         if (ts == null || hash == null) {
-            return "Assinatura inválida. 'ts' ou 'v1' ausente";
+            return false;
         }
 
         String manifest = String.format("id:%s;request-id:%s;ts:%s;", dataID, xRequestId, ts);
@@ -60,14 +108,9 @@ public class MpPaymentService {
             byte[] hmacBytes = mac.doFinal(manifest.getBytes());
             String calculatedHash = Utils.bytesToHex(hmacBytes);
 
-            if (calculatedHash.equals(hash)) {
-                return "HMAC verification passed";
-            } else {
-                return "HMAC verification failed";
-            }
+            return calculatedHash.equals(hash);
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Erro ao validar HMAC: " + e.getMessage();
+            return false;
         }
     }
 
