@@ -1,4 +1,4 @@
-package jvsantos.tech.payment.dto;
+package jvsantos.tech.payment.dto.response;
 
 import jvsantos.tech.payment.entity.Payment;
 import jvsantos.tech.payment.enums.PaymentStatus;

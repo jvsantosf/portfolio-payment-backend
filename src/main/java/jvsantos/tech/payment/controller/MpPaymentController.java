@@ -1,6 +1,6 @@
 package jvsantos.tech.payment.controller;
 
-import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
+import jvsantos.tech.payment.dto.response.MpPaymentUpdateResponse;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.service.MpPaymentService;
 import lombok.AllArgsConstructor;

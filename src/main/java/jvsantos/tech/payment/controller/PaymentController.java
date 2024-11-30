@@ -1,6 +1,7 @@
 package jvsantos.tech.payment.controller;
 
-import jvsantos.tech.payment.dto.PaymentCreateResponse;
+import jvsantos.tech.payment.dto.request.PaymentCreateRequest;
+import jvsantos.tech.payment.dto.response.PaymentCreateResponse;
 import jvsantos.tech.payment.entity.Payment;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.service.PaymentService;
@@ -19,7 +20,7 @@ public class PaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public PaymentCreateResponse create(@RequestBody Payment request) throws MpPaymentInvalidException {
+    public PaymentCreateResponse create(@RequestBody PaymentCreateRequest request) throws MpPaymentInvalidException {
         return service.create(request);
     }
 

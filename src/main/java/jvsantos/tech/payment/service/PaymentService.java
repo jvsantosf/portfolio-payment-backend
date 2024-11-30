@@ -1,6 +1,7 @@
 package jvsantos.tech.payment.service;
 
-import jvsantos.tech.payment.dto.PaymentCreateResponse;
+import jvsantos.tech.payment.dto.request.PaymentCreateRequest;
+import jvsantos.tech.payment.dto.response.PaymentCreateResponse;
 import jvsantos.tech.payment.entity.Payment;
 import jvsantos.tech.payment.enums.PaymentStatus;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
@@ -19,22 +20,26 @@ public class PaymentService {
     private final PaymentRepository repository;
     private final MpPaymentService mpPaymentService;
 
-    public PaymentCreateResponse create(Payment payment) throws MpPaymentInvalidException {
-        final var mpPayment = mpPaymentService.create(payment);
+    public PaymentCreateResponse create(PaymentCreateRequest request) throws MpPaymentInvalidException {
+        final var mpPayment = mpPaymentService.create(request);
 
         if (mpPayment == null) {
-            throw new MpPaymentInvalidException(payment.getId());
+            throw new MpPaymentInvalidException();
         }
 
-        payment.setId(mpPayment.getId());
-        payment.setStatus(PaymentStatus.CREATED);
-
-        repository.save(payment);
+        repository.save(Payment.builder()
+                        .withId(mpPayment.getId())
+                        .withFirstName(request.name())
+                        .withEmail(request.email())
+                        .withMessage(request.message())
+                        .withLastName("Teste")
+                        .withValue(request.amount())
+                .build());
 
         return PaymentCreateResponse.builder()
                 .id(mpPayment.getId())
                 .status(PaymentStatus.fromStatus(mpPayment.getStatus()))
-                .firstName(payment.getFirstName())
+                .firstName(request.name())
                 .qrCodeBase64(mpPayment.getPointOfInteraction().getTransactionData().getQrCodeBase64())
                 .build();
     }
@@ -43,7 +48,7 @@ public class PaymentService {
         Optional<Payment> optPayment = repository.findById(id);
 
         if (optPayment.isEmpty()) {
-            throw new MpPaymentInvalidException(id);
+            throw new MpPaymentInvalidException();
         }
 
         final var payment = optPayment.get();
@@ -57,6 +62,6 @@ public class PaymentService {
     public PaymentCreateResponse findPaymentById(long id) throws MpPaymentInvalidException {
         return repository.findById(id)
                 .map(PaymentCreateResponse::new)
-                .orElseThrow(() -> new MpPaymentInvalidException(id));
+                .orElseThrow(MpPaymentInvalidException::new);
     }
 }

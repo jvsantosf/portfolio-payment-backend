@@ -1,4 +1,4 @@
-package jvsantos.tech.payment.dto;
+package jvsantos.tech.payment.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

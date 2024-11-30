@@ -7,7 +7,7 @@ import com.mercadopago.client.payment.PaymentPayerRequest;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
-import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
+import jvsantos.tech.payment.dto.response.MpPaymentUpdateResponse;
 import jvsantos.tech.payment.enums.PaymentStatus;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.repository.PaymentRepository;
@@ -45,7 +45,7 @@ public class MpPaymentService {
         Optional<jvsantos.tech.payment.entity.Payment> optPayment = paymentRepository.findById(id);
 
         if (optPayment.isEmpty()) {
-            throw new MpPaymentInvalidException(id);
+            throw new MpPaymentInvalidException();
         }
 
         final var payment = optPayment.get();
@@ -56,15 +56,15 @@ public class MpPaymentService {
         log.info("Atualizando status pagamento de ID {} para {}", response.id(), response.action());
     }
 
-    public Payment create(jvsantos.tech.payment.entity.Payment payment) {
+    public Payment create(jvsantos.tech.payment.dto.request.PaymentCreateRequest payment) {
         MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
         PaymentClient client = new PaymentClient();
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
-                .transactionAmount(payment.getValue())
+                .transactionAmount(payment.amount())
                 .paymentMethodId("pix")
                 .payer(
                         PaymentPayerRequest.builder()
-                                .email(payment.getEmail())
+                                .email(payment.email())
                                 .build()
                 )
                 .build();
