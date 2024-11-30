@@ -29,6 +29,7 @@ public class PaymentService {
 
         repository.save(Payment.builder()
                         .withId(mpPayment.getId())
+                        .withStatus(request.status())
                         .withFirstName(request.name())
                         .withEmail(request.email())
                         .withMessage(request.message())

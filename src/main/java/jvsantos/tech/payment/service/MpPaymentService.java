@@ -56,15 +56,18 @@ public class MpPaymentService {
         log.info("Atualizando status pagamento de ID {} para {}", response.id(), response.action());
     }
 
-    public Payment create(jvsantos.tech.payment.dto.request.PaymentCreateRequest payment) {
+    public Payment create(jvsantos.tech.payment.dto.request.PaymentCreateRequest request) {
         MercadoPagoConfig.setAccessToken(ACCESS_TOKEN);
         PaymentClient client = new PaymentClient();
+
+        log.debug("Objeto enviado: {}", request);
+
         PaymentCreateRequest paymentCreateRequest = PaymentCreateRequest.builder()
-                .transactionAmount(payment.amount())
+                .transactionAmount(request.amount())
                 .paymentMethodId("pix")
                 .payer(
                         PaymentPayerRequest.builder()
-                                .email(payment.email())
+                                .email(request.email())
                                 .build()
                 )
                 .build();
@@ -72,7 +75,7 @@ public class MpPaymentService {
         try {
             return client.create(paymentCreateRequest);
         } catch (MPException | MPApiException e) {
-            log.error("Não foi possível criar o pagamento");
+            log.error("Não foi possível criar o pagamento {}", e.getMessage());
         }
 
         return null;
