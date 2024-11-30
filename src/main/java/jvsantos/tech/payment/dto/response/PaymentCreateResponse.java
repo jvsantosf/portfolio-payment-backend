@@ -16,17 +16,18 @@ import java.math.BigDecimal;
 public class PaymentCreateResponse {
 
     private long id;
-    private BigDecimal amount;
-    private PaymentStatus status;
-    private String qrCodeBase64;
+    private String name;
     private String message;
-    private String firstName;
+    private String email;
+    private PaymentStatus status;
+    private BigDecimal amount;
+    private String qrCodeBase64;
 
     public PaymentCreateResponse(Payment payment) {
         this.id = payment.getId();
         this.amount = payment.getValue();
         this.status = payment.getStatus();
         this.message = payment.getMessage();
-        this.firstName = payment.getFirstName();
+        this.name = payment.getFirstName();
     }
 }

@@ -39,8 +39,11 @@ public class PaymentService {
 
         return PaymentCreateResponse.builder()
                 .id(mpPayment.getId())
-                .status(PaymentStatus.fromStatus(mpPayment.getStatus()))
-                .firstName(request.name())
+                .name(request.name())
+                .message(request.message())
+                .email(request.email())
+                .status(request.status())
+                .amount(request.amount())
                 .qrCodeBase64(mpPayment.getPointOfInteraction().getTransactionData().getQrCodeBase64())
                 .build();
     }

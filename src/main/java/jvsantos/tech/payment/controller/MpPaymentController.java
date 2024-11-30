@@ -1,5 +1,7 @@
 package jvsantos.tech.payment.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jvsantos.tech.payment.dto.response.MpPaymentUpdateResponse;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.service.MpPaymentService;
@@ -21,13 +23,19 @@ public class MpPaymentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Object> notification(@RequestBody MpPaymentUpdateResponse response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) throws MpPaymentInvalidException {
+    public ResponseEntity<Object> notification(@RequestBody String response, @RequestHeader Map<String, String> headers, @RequestParam Map<String, String> queryParams) throws MpPaymentInvalidException {
         if (!service.isSecure(headers, queryParams)) {
             log.info("O POST enviado para o webhook é desconhecido.");
             return ResponseEntity.badRequest().build();
         }
 
-        service.updatePaymentStatus(response);
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            service.updatePaymentStatus(mapper.readValue(response, MpPaymentUpdateResponse.class));
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
         return ResponseEntity.ok().build();
     }
 
