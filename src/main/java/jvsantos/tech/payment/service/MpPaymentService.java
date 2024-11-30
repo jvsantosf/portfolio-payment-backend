@@ -8,6 +8,7 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
+import jvsantos.tech.payment.enums.PaymentStatus;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.repository.PaymentRepository;
 import jvsantos.tech.payment.utils.Utils;
@@ -39,14 +40,16 @@ public class MpPaymentService {
     private PaymentRepository paymentRepository;
 
     public void updatePaymentStatus(MpPaymentUpdateResponse response) throws MpPaymentInvalidException {
-        Optional<jvsantos.tech.payment.entity.Payment> optPayment = paymentRepository.findById(response.id());
+        final var id = Long.parseLong(response.id());
+
+        Optional<jvsantos.tech.payment.entity.Payment> optPayment = paymentRepository.findById(id);
 
         if (optPayment.isEmpty()) {
-            throw new MpPaymentInvalidException(response.id());
+            throw new MpPaymentInvalidException(id);
         }
 
         final var payment = optPayment.get();
-        payment.setStatus(response.action());
+        payment.setStatus(PaymentStatus.fromStatus(response.action()));
 
         paymentRepository.save(payment);
 
