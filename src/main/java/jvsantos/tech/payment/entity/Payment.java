@@ -1,5 +1,6 @@
 package jvsantos.tech.payment.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jvsantos.tech.payment.enums.PaymentStatus;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,7 @@ public class Payment {
     private String firstName;
 
     @Column
+    @Nullable
     private String lastName;
 
     @Column
