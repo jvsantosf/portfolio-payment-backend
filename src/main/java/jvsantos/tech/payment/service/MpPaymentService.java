@@ -10,6 +10,7 @@ import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
+import jvsantos.tech.payment.repository.PaymentRepository;
 import jvsantos.tech.payment.utils.Utils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,10 +39,21 @@ public class MpPaymentService {
     private String ACCESS_TOKEN;
 
     @NonNull
-    private PaymentService paymentService;
+    private PaymentRepository paymentRepository;
 
     public void updatePaymentStatus(MpPaymentUpdateResponse response) throws MpPaymentInvalidException {
-        paymentService.updatePaymentStatus(response.id(), response.action());
+        Optional<jvsantos.tech.payment.entity.Payment> optPayment = paymentRepository.findById(response.id());
+
+        if (optPayment.isEmpty()) {
+            throw new MpPaymentInvalidException(response.id());
+        }
+
+        final var payment = optPayment.get();
+        payment.setStatus(response.action());
+
+        paymentRepository.save(payment);
+
+        log.info("Atualizando status pagamento de ID {} para {}", response.id(), response.action());
     }
 
     public Payment create(jvsantos.tech.payment.entity.Payment payment) {
