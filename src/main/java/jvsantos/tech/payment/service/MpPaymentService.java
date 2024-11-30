@@ -9,6 +9,7 @@ import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.exceptions.MPException;
 import com.mercadopago.resources.payment.Payment;
 import jvsantos.tech.payment.dto.MpPaymentUpdateResponse;
+import jvsantos.tech.payment.exception.MpPaymentInvalidException;
 import jvsantos.tech.payment.utils.Utils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class MpPaymentService {
     @NonNull
     private PaymentService paymentService;
 
-    public void updatePaymentStatus(MpPaymentUpdateResponse response) {
+    public void updatePaymentStatus(MpPaymentUpdateResponse response) throws MpPaymentInvalidException {
         paymentService.updatePaymentStatus(response.id(), response.action());
     }
 
