@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Builder(setterPrefix = "with")
 @Data
 @Entity
-@Table
+@Table(name = "payments")
 public class Payment {
 
     @Id

@@ -1,6 +1,5 @@
 package jvsantos.tech.payment.service;
 
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.payment.PaymentCreateRequest;
@@ -15,7 +14,6 @@ import jvsantos.tech.payment.utils.Utils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,7 +29,6 @@ import java.util.Optional;
 @Service
 public class MpPaymentService {
 
-    private final ParameterNamesModule parameterNamesModule;
     @Value("${mercado.pago.webhook.secret}")
     private String SECRET_KEY;
 

@@ -3,7 +3,6 @@ package jvsantos.tech.payment.controller;
 import jvsantos.tech.payment.dto.PaymentCreateResponse;
 import jvsantos.tech.payment.entity.Payment;
 import jvsantos.tech.payment.exception.MpPaymentInvalidException;
-import jvsantos.tech.payment.exception.PaymentAlreadyCreatedException;
 import jvsantos.tech.payment.service.PaymentService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
